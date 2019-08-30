@@ -40,6 +40,8 @@ library(corrplot)
 library(car)
 library(doParallel)
 library(ggfortify)
+library(cluster)
+library(plotly)
 ```
 
 ```{r dataimport, echo=FALSE, message=FALSE, warning=FALSE}
@@ -62,7 +64,141 @@ summary(training.pca)
 ```
 
 ```{r PCA, echo=FALSE, message=FALSE, warning=FALSE}
-autoplot(prcomp(training[,-53]),data=training,colour="classe")
+autoplot(prcomp(training[,-53]),x=1,y=2,data=training,colour="classe",loadings=TRUE, loadings.label=TRUE)
+```
 
+```{r graphbelt, echo=FALSE, message=FALSE, warning=FALSE}
+#define sensor groups
+sensors <- c("belt", "arm", "dumbbell", "forearm")
+
+p1 <- plot_ly(training, x = ~roll_belt, y = ~pitch_belt, z = ~yaw_belt, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'Belt-Roll'),
+                     yaxis = list(title = 'Belt-Pitch'),
+                     zaxis = list(title = 'Belt-Yaw')))
+p1
+
+p2 <- plot_ly(training, x = ~gyros_belt_x, y = ~gyros_belt_y, z = ~gyros_belt_z, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'Belt.gyro.x'),
+                     yaxis = list(title = 'Belt.gyro.y'),
+                     zaxis = list(title = 'Belt.gyro.z')))
+p2
+
+p3 <- plot_ly(training, x = ~accel_belt_x, y = ~accel_belt_y, z = ~accel_belt_z, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'Belt.gyro.x'),
+                     yaxis = list(title = 'Belt.gyro.y'),
+                     zaxis = list(title = 'Belt.gyro.z')))
+p3
+
+p4 <- plot_ly(training, x = ~magnet_belt_x, y = ~magnet_belt_y, z = ~magnet_belt_z, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'Belt.gyro.x'),
+                     yaxis = list(title = 'Belt.gyro.y'),
+                     zaxis = list(title = 'Belt.gyro.z')))
+p4
+
+```
+
+```{r grapharm, echo=FALSE, message=FALSE, warning=FALSE}
+#define sensor groups
+sensors <- c("belt", "arm", "dumbbell", "forearm")
+
+p1 <- plot_ly(training, x = ~roll_arm, y = ~pitch_arm, z = ~yaw_arm, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'arm-Roll'),
+                     yaxis = list(title = 'arm-Pitch'),
+                     zaxis = list(title = 'arm-Yaw')))
+p1
+
+p2 <- plot_ly(training, x = ~gyros_arm_x, y = ~gyros_arm_y, z = ~gyros_arm_z, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'arm.gyro.x'),
+                     yaxis = list(title = 'arm.gyro.y'),
+                     zaxis = list(title = 'arm.gyro.z')))
+p2
+
+p3 <- plot_ly(training, x = ~accel_arm_x, y = ~accel_arm_y, z = ~accel_arm_z, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'arm.gyro.x'),
+                     yaxis = list(title = 'arm.gyro.y'),
+                     zaxis = list(title = 'arm.gyro.z')))
+p3
+
+p4 <- plot_ly(training, x = ~magnet_arm_x, y = ~magnet_arm_y, z = ~magnet_arm_z, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'arm.gyro.x'),
+                     yaxis = list(title = 'arm.gyro.y'),
+                     zaxis = list(title = 'arm.gyro.z')))
+p4
+
+```
+
+```{r graphdumbbell, echo=FALSE, message=FALSE, warning=FALSE}
+#define sensor groups
+sensors <- c("belt", "arm", "dumbbell", "forearm")
+
+p1 <- plot_ly(training, x = ~roll_dumbbell, y = ~pitch_dumbbell, z = ~yaw_dumbbell, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'dumbbell-Roll'),
+                     yaxis = list(title = 'dumbbell-Pitch'),
+                     zaxis = list(title = 'dumbbell-Yaw')))
+p1
+
+p2 <- plot_ly(training, x = ~gyros_dumbbell_x, y = ~gyros_dumbbell_y, z = ~gyros_dumbbell_z, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'dumbbell.gyro.x'),
+                     yaxis = list(title = 'dumbbell.gyro.y'),
+                     zaxis = list(title = 'dumbbell.gyro.z')))
+p2
+
+p3 <- plot_ly(training, x = ~accel_dumbbell_x, y = ~accel_dumbbell_y, z = ~accel_dumbbell_z, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'dumbbell.gyro.x'),
+                     yaxis = list(title = 'dumbbell.gyro.y'),
+                     zaxis = list(title = 'dumbbell.gyro.z')))
+p3
+
+p4 <- plot_ly(training, x = ~magnet_dumbbell_x, y = ~magnet_dumbbell_y, z = ~magnet_dumbbell_z, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'dumbbell.gyro.x'),
+                     yaxis = list(title = 'dumbbell.gyro.y'),
+                     zaxis = list(title = 'dumbbell.gyro.z')))
+p4
+
+```
+
+```{r featureextraction, echo=FALSE, message=FALSE, warning=FALSE}
+#define sensor groups
+sensors <- c("belt", "arm", "dumbbell", "forearm")
+
+p1 <- plot_ly(training, x = ~roll_forearm, y = ~pitch_forearm, z = ~yaw_forearm, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'forearm-Roll'),
+                     yaxis = list(title = 'forearm-Pitch'),
+                     zaxis = list(title = 'forearm-Yaw')))
+p1
+
+p2 <- plot_ly(training, x = ~gyros_forearm_x, y = ~gyros_forearm_y, z = ~gyros_forearm_z, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'forearm.gyro.x'),
+                     yaxis = list(title = 'forearm.gyro.y'),
+                     zaxis = list(title = 'forearm.gyro.z')))
+p2
+
+p3 <- plot_ly(training, x = ~accel_forearm_x, y = ~accel_forearm_y, z = ~accel_forearm_z, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'forearm.gyro.x'),
+                     yaxis = list(title = 'forearm.gyro.y'),
+                     zaxis = list(title = 'forearm.gyro.z')))
+p3
+
+p4 <- plot_ly(training, x = ~magnet_forearm_x, y = ~magnet_forearm_y, z = ~magnet_forearm_z, color = ~classe) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'forearm.gyro.x'),
+                     yaxis = list(title = 'forearm.gyro.y'),
+                     zaxis = list(title = 'forearm.gyro.z')))
+p4
 
 ```
