@@ -1,3 +1,4 @@
+
 ---
 title: "Machine Learning Project"
 author: "Jared Allen"
@@ -169,7 +170,7 @@ p4
 
 ```
 
-```{r featureextraction, echo=FALSE, message=FALSE, warning=FALSE}
+```{r graphforearm, echo=FALSE, message=FALSE, warning=FALSE}
 #define sensor groups
 sensors <- c("belt", "arm", "dumbbell", "forearm")
 
@@ -200,5 +201,12 @@ p4 <- plot_ly(training, x = ~magnet_forearm_x, y = ~magnet_forearm_y, z = ~magne
                      yaxis = list(title = 'forearm.gyro.y'),
                      zaxis = list(title = 'forearm.gyro.z')))
 p4
+
+```
+
+```{r models, echo=FALSE, message=FALSE, warning=FALSE}
+
+modelbelt <- train(training$classe~.,data=training,method="rf")
+
 
 ```
