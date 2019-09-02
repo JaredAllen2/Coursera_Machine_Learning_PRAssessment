@@ -204,9 +204,45 @@ p4
 
 ```
 
-```{r models, echo=FALSE, message=FALSE, warning=FALSE}
+```{r models, echo=FALSE, message=FALSE}
+training_arm <-
+  training %>%
+  select(matches("classe|._arm."))
 
-modelbelt <- train(training$classe~.,data=training,method="rf")
+set.seed(123)
+
+ctrl <- trainControl(
+  method = "repeatedcv", 
+  repeats = 3,
+  classProbs = TRUE
+)
+
+plsfit <- train(classe~.,
+                   data=training_arm,
+                   method = "rf")
+
+plsfit
+
+```
+
+```{r modelassess, echo=FALSE, warning=FALSE, message=FALSE}
+
+ggplot(modelfit)
+
+```
+
+```{r modelcheck, echo=FALSE, warning=FALSE, message=FALSE}
+plsClasses <- predict(plsFit, newdata = testing)
+str(plsClasses)
+
+plsProbs <- predict(plsFit, newdata = testing, type = "prob")
+
+confusionMatrix(data = plsClasses, testing$Class)
 
 
+```
+
+```{r resampling }
+resamps <- resamples(list(pls = plsFit, rda = rdaFit))
+summary(resamps)
 ```
