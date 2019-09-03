@@ -43,6 +43,7 @@ library(doParallel)
 library(ggfortify)
 library(cluster)
 library(plotly)
+library(caretEnsemble)
 ```
 
 ```{r dataimport, echo=FALSE, message=FALSE, warning=FALSE}
@@ -59,190 +60,120 @@ Step 1 - EDA & removal of uninformative variables
 training <- training_raw[sapply(training_raw, function(x) !any(is.na(x)))] 
 training <- training[,-1:-7]
 
-training.pca <- prcomp(training[,-53])
-summary(training.pca)
-
 ```
 
-```{r PCA, echo=FALSE, message=FALSE, warning=FALSE}
-autoplot(prcomp(training[,-53]),x=1,y=2,data=training,colour="classe",loadings=TRUE, loadings.label=TRUE)
-```
 
-```{r graphbelt, echo=FALSE, message=FALSE, warning=FALSE}
-#define sensor groups
-sensors <- c("belt", "arm", "dumbbell", "forearm")
+```{r subsetting, echo=FALSE, message=FALSE}
 
-p1 <- plot_ly(training, x = ~roll_belt, y = ~pitch_belt, z = ~yaw_belt, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'Belt-Roll'),
-                     yaxis = list(title = 'Belt-Pitch'),
-                     zaxis = list(title = 'Belt-Yaw')))
-p1
+##split 'training' data into training and test sets, leave 'testing' as hold out validation set
 
-p2 <- plot_ly(training, x = ~gyros_belt_x, y = ~gyros_belt_y, z = ~gyros_belt_z, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'Belt.gyro.x'),
-                     yaxis = list(title = 'Belt.gyro.y'),
-                     zaxis = list(title = 'Belt.gyro.z')))
-p2
+set.seed(875)
+train_control <- trainControl(method="cv", number=5)
 
-p3 <- plot_ly(training, x = ~accel_belt_x, y = ~accel_belt_y, z = ~accel_belt_z, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'Belt.gyro.x'),
-                     yaxis = list(title = 'Belt.gyro.y'),
-                     zaxis = list(title = 'Belt.gyro.z')))
-p3
+##sensors <- c("belt", "arm", "dumbbell", "forearm")
+dta_train_belt <-
+  training %>%
+  select(matches("classe|._belt."))
 
-p4 <- plot_ly(training, x = ~magnet_belt_x, y = ~magnet_belt_y, z = ~magnet_belt_z, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'Belt.gyro.x'),
-                     yaxis = list(title = 'Belt.gyro.y'),
-                     zaxis = list(title = 'Belt.gyro.z')))
-p4
-
-```
-
-```{r grapharm, echo=FALSE, message=FALSE, warning=FALSE}
-#define sensor groups
-sensors <- c("belt", "arm", "dumbbell", "forearm")
-
-p1 <- plot_ly(training, x = ~roll_arm, y = ~pitch_arm, z = ~yaw_arm, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'arm-Roll'),
-                     yaxis = list(title = 'arm-Pitch'),
-                     zaxis = list(title = 'arm-Yaw')))
-p1
-
-p2 <- plot_ly(training, x = ~gyros_arm_x, y = ~gyros_arm_y, z = ~gyros_arm_z, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'arm.gyro.x'),
-                     yaxis = list(title = 'arm.gyro.y'),
-                     zaxis = list(title = 'arm.gyro.z')))
-p2
-
-p3 <- plot_ly(training, x = ~accel_arm_x, y = ~accel_arm_y, z = ~accel_arm_z, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'arm.gyro.x'),
-                     yaxis = list(title = 'arm.gyro.y'),
-                     zaxis = list(title = 'arm.gyro.z')))
-p3
-
-p4 <- plot_ly(training, x = ~magnet_arm_x, y = ~magnet_arm_y, z = ~magnet_arm_z, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'arm.gyro.x'),
-                     yaxis = list(title = 'arm.gyro.y'),
-                     zaxis = list(title = 'arm.gyro.z')))
-p4
-
-```
-
-```{r graphdumbbell, echo=FALSE, message=FALSE, warning=FALSE}
-#define sensor groups
-sensors <- c("belt", "arm", "dumbbell", "forearm")
-
-p1 <- plot_ly(training, x = ~roll_dumbbell, y = ~pitch_dumbbell, z = ~yaw_dumbbell, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'dumbbell-Roll'),
-                     yaxis = list(title = 'dumbbell-Pitch'),
-                     zaxis = list(title = 'dumbbell-Yaw')))
-p1
-
-p2 <- plot_ly(training, x = ~gyros_dumbbell_x, y = ~gyros_dumbbell_y, z = ~gyros_dumbbell_z, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'dumbbell.gyro.x'),
-                     yaxis = list(title = 'dumbbell.gyro.y'),
-                     zaxis = list(title = 'dumbbell.gyro.z')))
-p2
-
-p3 <- plot_ly(training, x = ~accel_dumbbell_x, y = ~accel_dumbbell_y, z = ~accel_dumbbell_z, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'dumbbell.gyro.x'),
-                     yaxis = list(title = 'dumbbell.gyro.y'),
-                     zaxis = list(title = 'dumbbell.gyro.z')))
-p3
-
-p4 <- plot_ly(training, x = ~magnet_dumbbell_x, y = ~magnet_dumbbell_y, z = ~magnet_dumbbell_z, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'dumbbell.gyro.x'),
-                     yaxis = list(title = 'dumbbell.gyro.y'),
-                     zaxis = list(title = 'dumbbell.gyro.z')))
-p4
-
-```
-
-```{r graphforearm, echo=FALSE, message=FALSE, warning=FALSE}
-#define sensor groups
-sensors <- c("belt", "arm", "dumbbell", "forearm")
-
-p1 <- plot_ly(training, x = ~roll_forearm, y = ~pitch_forearm, z = ~yaw_forearm, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'forearm-Roll'),
-                     yaxis = list(title = 'forearm-Pitch'),
-                     zaxis = list(title = 'forearm-Yaw')))
-p1
-
-p2 <- plot_ly(training, x = ~gyros_forearm_x, y = ~gyros_forearm_y, z = ~gyros_forearm_z, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'forearm.gyro.x'),
-                     yaxis = list(title = 'forearm.gyro.y'),
-                     zaxis = list(title = 'forearm.gyro.z')))
-p2
-
-p3 <- plot_ly(training, x = ~accel_forearm_x, y = ~accel_forearm_y, z = ~accel_forearm_z, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'forearm.gyro.x'),
-                     yaxis = list(title = 'forearm.gyro.y'),
-                     zaxis = list(title = 'forearm.gyro.z')))
-p3
-
-p4 <- plot_ly(training, x = ~magnet_forearm_x, y = ~magnet_forearm_y, z = ~magnet_forearm_z, color = ~classe) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'forearm.gyro.x'),
-                     yaxis = list(title = 'forearm.gyro.y'),
-                     zaxis = list(title = 'forearm.gyro.z')))
-p4
-
-```
-
-```{r models, echo=FALSE, message=FALSE}
-training_arm <-
+dta_train_arm <-
   training %>%
   select(matches("classe|._arm."))
 
+dta_train_dumbbell <-
+  training %>%
+  select(matches("classe|._dumbbell."))
+
+dta_train_forearm <-
+  training %>%
+  select(matches("classe|._forearm."))
+
+```
+
+```{r models2, echo=FALSE, message=FALSE}
+
 set.seed(123)
-
-ctrl <- trainControl(
-  method = "repeatedcv", 
-  repeats = 3,
-  classProbs = TRUE
-)
-
-plsfit <- train(classe~.,
-                   data=training_arm,
+mdl_belt_rf <- train(classe~.,
+                   dta_train_belt,
+                   trControl=train_control,
                    method = "rf")
 
-plsfit
+mdl_arm_rf <- train(classe~.,
+                   dta_train_belt,
+                   trControl=train_control,
+                   method = "rf")
+
+set.seed(123)
+mdl_dumbbell_rf <- train(classe~.,
+                   dta_train_dumbbell,
+                   trControl=train_control,
+                   method = "rf")
+
+set.seed(123)
+mdl_forearm_rf <- train(classe~.,
+                   dta_train_forearm,
+                   trControl=train_control,
+                   method = "rf")
+```
+
+```{r beltmodel}
+print(mdl_belt_rf)
+confusionMatrix(mdl_belt_rf, norm = "none", dnn=c("Prediction","Reference"))
 
 ```
 
-```{r modelassess, echo=FALSE, warning=FALSE, message=FALSE}
-
-ggplot(modelfit)
-
-```
-
-```{r modelcheck, echo=FALSE, warning=FALSE, message=FALSE}
-plsClasses <- predict(plsFit, newdata = testing)
-str(plsClasses)
-
-plsProbs <- predict(plsFit, newdata = testing, type = "prob")
-
-confusionMatrix(data = plsClasses, testing$Class)
-
+```{r beltmodel}
+print(mdl_arm_rf)
+confusionMatrix(mdl_arm_rf, norm = "none", dnn=c("Prediction","Reference"))
 
 ```
 
-```{r resampling }
-resamps <- resamples(list(pls = plsFit, rda = rdaFit))
-summary(resamps)
+```{r beltmodel}
+print(mdl_dumbbell_rf)
+confusionMatrix(mdl_dumbbell_rf, norm = "none", dnn=c("Prediction","Reference"))
+
+```
+
+```{r beltmodel}
+print(mdl_forearm_rf)
+confusionMatrix(mdl_forearm_rf, norm = "none", dnn=c("Prediction","Reference"))
+
+```
+
+```{r modelensemble, echo=FALSE, message=FALSE, warning=FALSE}
+
+tconfirm <- as.factor(training$classe)
+tp_belt_rf <- predict(mdl_belt_rf, newdata=training)
+tp_arm_rf <- predict(mdl_arm_rf, newdata=training)
+tp_dumbbell_rf <- predict(mdl_dumbbell_rf, newdata=training)
+tp_forearm_rf <- predict(mdl_forearm_rf, newdata=training)
+
+train_ensemble <- cbind.data.frame(classe=tconfirm,belt_rf=tp_belt_rf,arm_rf=tp_arm_rf,dumbbell_rf=tp_dumbbell_rf,forearm_rf=tp_forearm_rf)
+
+set.seed(897)
+
+mdl_ensemble <- train(classe~.,
+                   train_ensemble,
+                   trControl=train_control,
+                   method = "nb")
+
+print(mdl_ensemble)
+```
+
+```{r confmat, echo=FALSE, message=FALSE, warning=FALSE}
+
+confusionMatrix(mdl_ensemble, norm = "none", dnn=c("Prediction","Reference"))
+
+```
+
+```{r confmat, echo=FALSE, message=FALSE, warning=FALSE}
+
+test_belt_rf <- predict(mdl_belt_rf, newdata=testing)
+test_arm_rf <- predict(mdl_arm_rf, newdata=testing)
+test_dumbbell_rf <- predict(mdl_dumbbell_rf, newdata=testing)
+test_forearm_rf <- predict(mdl_forearm_rf, newdata=testing)
+test_ensemble <- cbind.data.frame(belt_rf=test_belt_rf,arm_rf=test_arm_rf,dumbbell_rf=test_dumbbell_rf,forearm_rf=test_forearm_rf)
+
+trainingpred <- predict(mdl_ensemble, test_ensemble)
+trainingpred
+
 ```
