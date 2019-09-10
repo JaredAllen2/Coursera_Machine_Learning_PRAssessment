@@ -137,7 +137,7 @@ mdl_ensemble <- train(classe~.,
 
 ```
 
-```{r OOSAccuracy}
+```{r OOSAccuracy, echo=FALSE, message=FALSE, warning=FALSE}
 
 accuracysummary <- data.frame(
   Models = c("Arm_RF","Belt_RF","Dumbbell_RF","Forearm_RF","Full_RF","Ensemble_NB"),
@@ -160,31 +160,31 @@ This model gave perfect accuracy within 5-fold cross validation.
 
 ## APPENDIX A: Confusion Matrices for Trained Models
 
-```{r beltmodel}
+```{r beltmodel, echo=FALSE, message=FALSE, warning=FALSE}
 print("Random forest trained on Belt sensor data")
 confusionMatrix(mdl_belt_rf, norm = "none", dnn=c("Prediction","Reference"))
 
 ```
 
-```{r armmodel}
+```{r armmodel, echo=FALSE, message=FALSE, warning=FALSE}
 print("Random forest trained on Arm sensor data")
 confusionMatrix(mdl_arm_rf, norm = "none", dnn=c("Prediction","Reference"))
 
 ```
 
-```{r dumbbellmodel}
+```{r dumbbellmodel, echo=FALSE, message=FALSE, warning=FALSE}
 print("Random forest trained on Dumbbell sensor data")
 confusionMatrix(mdl_dumbbell_rf, norm = "none", dnn=c("Prediction","Reference"))
 
 ```
 
-```{r forearmmodel}
+```{r forearmmodel, echo=FALSE, message=FALSE, warning=FALSE}
 print("Random forest trained on Forearm sensor data")
 confusionMatrix(mdl_forearm_rf, norm = "none", dnn=c("Prediction","Reference"))
 
 ```
 
-```{r fullmodel}
+```{r fullmodel, echo=FALSE, message=FALSE, warning=FALSE}
 print("Random forest trained on combination of all sensor data")
 confusionMatrix(mdl_full_rf, norm = "none", dnn=c("Prediction","Reference"))
 
